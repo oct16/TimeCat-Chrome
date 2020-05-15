@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "outDir": "dist",
+        "sourceMap": true,
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "allowJs": false,
+        "noUnusedLocals": false,
+        "strictNullChecks": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "experimentalDecorators": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "removeComments": true,
+        "declaration": true,
+        "jsx": "preserve",
+        "skipLibCheck": true,
+        "lib": [
+            "esnext",
+            "dom",
+            "dom.iterable"
+        ],
+        "types": [
+            "@types/chrome",
+            "@types/node"
+        ],
+        "rootDir": ".",
+        "paths": {
+            "@TimeCat/*": [
+                "packages/*/src"
+            ]
+        }
+    },
+    "include": [
+        "global.d.ts",
+        "index.ts",
+        "chrome/src/assets/ctrl.js"
+    ]
+}
