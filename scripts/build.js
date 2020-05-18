@@ -13,7 +13,7 @@ const target = 'timecat.min.js'
 const assetsDir = 'src/assets/'
 const isExist = fs.existsSync(assetsDir + target)
 
-if (!isExist) {
+if (!isExist && !envDev && !envLive) {
     const errorMsg = chalk.yellow(target) + chalk.red(' not found, please put ' + target + ' in the path: ' + assetsDir)
     console.error(errorMsg)
     process.exit(0)

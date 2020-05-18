@@ -28,15 +28,10 @@
             "@types/node"
         ],
         "rootDir": ".",
-        "paths": {
-            "@TimeCat/*": [
-                "packages/*/src"
-            ]
-        }
+        "paths": {}
     },
     "include": [
-        "global.d.ts",
-        "index.ts",
-        "chrome/src/assets/ctrl.js"
+        "src/*",
+        "global.d.ts"
     ]
 }
