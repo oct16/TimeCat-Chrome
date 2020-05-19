@@ -2,7 +2,7 @@
     "name": "TimeCat Chrome",
     "manifest_version": 2,
     "description": "TimeCat Chrome",
-    "version": "0.0,1",
+    "version": "0.0.1",
     "background": {
         "scripts": [
             "timecat-chrome-background.js"
