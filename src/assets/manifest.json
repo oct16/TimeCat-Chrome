@@ -1,7 +1,7 @@
 {
     "name": "TimeCat Chrome",
     "manifest_version": 2,
-    "description": "TimeCat Chrome",
+    "description": "A Magical Web Recorder",
     "version": "0.0.1",
     "background": {
         "scripts": [
@@ -26,7 +26,7 @@
         }
     ],
     "web_accessible_resources": [
-        "timecat.min.js",
+        "timecatjs.min.js",
         "timecat-chrome-page.js"
     ]
 }

@@ -6,12 +6,12 @@ let ctrl: {
 } | null
 
 function record(e: Event) {
-    const cat = window.cat
+    const cat = (window as any).timecat
     const { record } = cat
 
     if (process.env.LIVE_MODE) {
         const socket = io('http://localhost:9528')
-        ctrl = record(data => {
+        ctrl = record((data: any) => {
             socket.emit('record-msg', data)
         })
         return
@@ -21,7 +21,7 @@ function record(e: Event) {
 }
 
 function replay(e: Event & { detail: { scripts: { name: string; src: string }[] } }) {
-    const cat = (window as any).cat
+    const cat = (window as any).timecat
     if (ctrl) {
         const { scripts } = e.detail
         cat.exportReplay({

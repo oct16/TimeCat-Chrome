@@ -24,7 +24,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 const dest = isDev ? 'dist/chrome/' : 'dist/chrome/'
 
-const copyTargets = [{ src: 'src/assets/*', dest }, !isDev ? { src: 'dist/timecat.min.js', dest } : null].filter(
+const copyTargets = [{ src: 'src/assets/*', dest }, !isDev ? { src: 'dist/timecatjs.min.js', dest } : null].filter(
     Boolean
 )
 

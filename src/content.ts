@@ -1,7 +1,7 @@
 import { dispatchEvent, sendMessageToBackgroundScript } from './common'
 
 const isDev = process.env.NODE_ENV === 'development'
-const timeCatScript = isDev ? 'http://localhost:4321/timecat.min.js' : chrome.runtime.getURL('timecat.min.js')
+const timeCatScript = isDev ? 'http://localhost:4321/timecatjs.min.js' : chrome.runtime.getURL('timecatjs.min.js')
 
 chrome.runtime.onMessage.addListener(request => {
     const { type } = request
