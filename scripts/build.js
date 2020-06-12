@@ -24,7 +24,7 @@ if (!isExist && !envDev && !envLive) {
         'rollup',
         [
             '-c',
-            'builders/rollup.config.chrome.js',
+            'configs/rollup.config.chrome.js',
             envDev ? '-w' : '',
             '--environment',
             [`NODE_ENV:${env}`, `LIVE_MODE:${live}`].filter(Boolean).join(',')
