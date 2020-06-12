@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeCat Plugin Options</title>
+    <style>
+        ul {
+            list-style: none;
+            padding: 0
+        }
+    </style>
+</head>
+
+<body>
+    <h2>TimeCat Plugin Options</h2>
+    <hr>
+    <form id="options">
+        <ul>
+            <li>
+                <input id="autoplay" type="checkbox" checked>
+                <label for="autoplay">AutoPlay</label>
+            </li>
+            <li>
+                <input id="audio" type="checkbox">
+                <label for="audio">Audio</label>
+            </li>
+            <li>
+                <input id="audioExternal" type="checkbox">
+                <label for="audioExternal">Export Audio</label>
+            </li>
+            <li>
+                <input disabled id="dataExternal" type="checkbox">
+                <label for="dataExternal">Export Data</label>
+            </li>
+            <li>
+                <button id="reset">Reset</button>
+            </li>
+        </ul>
+
+    </form>
+
+    <script src="./timecat-chrome-options.js"></script>
+</body>
+
+</html>

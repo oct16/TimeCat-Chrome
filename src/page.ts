@@ -5,7 +5,9 @@ let ctrl: {
     unsubscribe: () => void
 } | null
 
-function record(e: Event) {
+function record(e: CustomEvent) {
+    const options = e.detail as { [key: string]: boolean }
+
     const cat = (window as any).timecat
     const { record } = cat
 
@@ -17,17 +19,14 @@ function record(e: Event) {
         return
     }
 
-    ctrl = record()
+    ctrl = record(options)
 }
 
-function replay(e: Event & { detail: { scripts: { name: string; src: string }[] } }) {
+function finish(e: CustomEvent) {
     const cat = (window as any).timecat
     if (ctrl) {
-        const { scripts } = e.detail
-        cat.exportReplay({
-            scripts,
-            autoPlay: true
-        })
+        const options = e.detail
+        cat.exportReplay(options)
         ctrl.unsubscribe()
     }
 }
@@ -45,6 +44,6 @@ function setWarn(handle?: () => void) {
 }
 
 window.addEventListener('CHROME_RECORD_START', record, false)
-window.addEventListener('CHROME_RECORD_FINISH', replay, false)
+window.addEventListener('CHROME_RECORD_FINISH', finish, false)
 
 setWarn()

@@ -1,30 +1,45 @@
-import { dispatchEvent, sendMessageToBackgroundScript } from './common'
+import {
+    dispatchEvent,
+    sendMessageToBackgroundScript,
+    storeKeys,
+    getOptions,
+    getRecordOptions,
+    getExportOptions
+} from './common'
 
 const isDev = process.env.NODE_ENV === 'development'
 const timeCatScript = isDev ? 'http://localhost:4321/timecatjs.min.js' : chrome.runtime.getURL('timecatjs.min.js')
 
-chrome.runtime.onMessage.addListener(request => {
+chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
+    sendResponse(null)
     const { type } = request
     switch (type) {
-        case 'START':
-            lazyInject(() => {
-                dispatchEvent('CHROME_RECORD_START')
+        case 'START': {
+            lazyInject(async () => {
+                const options = await getRecordOptions()
+                dispatchEvent('CHROME_RECORD_START', options)
             })
             break
-        case 'FINISH':
+        }
+        case 'FINISH': {
+            const options = await getExportOptions()
             dispatchEvent('CHROME_RECORD_FINISH', {
                 scripts: [
                     {
                         name: 'time-cat',
                         src: timeCatScript
                     }
-                ]
+                ],
+                ...options
             })
             break
-        case 'TAB_CHANGE':
+        }
+        case 'TAB_CHANGE': {
             dispatchEvent('CHROME_TAB_CHANGE')
             break
+        }
     }
+    return true
 })
 
 window.addEventListener('CHROME_RECORD_CANCEL', () =>

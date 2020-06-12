@@ -4,6 +4,11 @@ import replace from '@rollup/plugin-replace'
 import node from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
+import fs from 'fs'
+import html from '@rollup/plugin-html'
+
+const isDev = process.env.NODE_ENV === 'development'
+const dest = isDev ? 'dist/chrome/' : 'dist/chrome/'
 
 const defaultPlugin = [
     ts({
@@ -17,12 +22,8 @@ const defaultPlugin = [
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         'process.env.LIVE_MODE': JSON.stringify(process.env.LIVE_MODE)
     }),
-    terser()
+    isDev ? null : terser()
 ]
-
-const isDev = process.env.NODE_ENV === 'development'
-
-const dest = isDev ? 'dist/chrome/' : 'dist/chrome/'
 
 const copyTargets = [{ src: 'src/assets/*', dest }, !isDev ? { src: 'dist/timecatjs.min.js', dest } : null].filter(
     Boolean
@@ -30,10 +31,24 @@ const copyTargets = [{ src: 'src/assets/*', dest }, !isDev ? { src: 'dist/timeca
 
 export default [
     {
+        input: 'src/options.ts',
+        output: {
+            format: 'iife',
+            name: 'options',
+            file: dest + 'timecat-chrome-options.js'
+        },
+        plugins: [
+            ...defaultPlugin,
+            html({
+                template: () => fs.readFileSync('src/assets/options.html', 'utf8')
+            })
+        ]
+    },
+    {
         input: 'src/background.ts',
         output: {
             format: 'iife',
-            moduleName: 'cat-background',
+            name: 'background',
             file: dest + 'timecat-chrome-background.js'
         },
         plugins: [...defaultPlugin]
@@ -42,7 +57,7 @@ export default [
         input: 'src/page.ts',
         output: {
             format: 'iife',
-            moduleName: 'cat-page',
+            name: 'page',
             file: dest + 'timecat-chrome-page.js'
         },
         plugins: [...defaultPlugin]
@@ -51,7 +66,7 @@ export default [
         input: 'src/content.ts',
         output: {
             format: 'iife',
-            moduleName: 'cat-content',
+            name: 'content',
             file: dest + 'timecat-chrome-content.js'
         },
         plugins: [

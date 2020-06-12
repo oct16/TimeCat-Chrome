@@ -9,7 +9,10 @@
         ],
         "persistent": false
     },
-    "permissions": [],
+    "permissions": [
+        "storage"
+    ],
+    "options_page": "options.html",
     "browser_action": {
         "name": "~~~~~",
         "default_icon": "record-icon-black.png"
