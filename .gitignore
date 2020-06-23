@@ -104,3 +104,4 @@ typings/
 
 dist
 .DS_Store
+src/assets/timecatjs.min.js
