@@ -5,15 +5,11 @@ declare const options: HTMLFormElement
 window.addEventListener('load', function() {
     // Initialize the option controls.
     function initOptions() {
-        storeKeys.forEach(key => {
-            getOptions([key], items => {
-                if (items[key] === null) {
-                    setOption(key, options[key].checked)
-                    return
-                }
-                options[key].checked = items[key]
+        getOptions(storeKeys, opts => {
+            Object.keys(opts).forEach((key: keyof typeof opts) => {
+                options[key].checked = opts[key]
+                options[key].onchange = () => setOption(key, options[key].checked)
             })
-            options[key].onchange = () => setOption(key, options[key].checked)
         })
     }
 

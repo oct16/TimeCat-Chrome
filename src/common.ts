@@ -1,6 +1,17 @@
-export const recordKeys = ['audio']
-export const exportKeys = ['autoplay', 'audioExternal']
-export const storeKeys = [...recordKeys, ...exportKeys]
+const recordOptions = {
+    audio: false
+}
+const exportOptions = {
+    autoplay: true,
+    audioExternal: false
+}
+
+const defaultOptions = { ...recordOptions, ...exportOptions }
+
+export const storeKeys = [
+    ...Object.keys(recordOptions),
+    ...Object.keys(exportOptions)
+] as (keyof typeof defaultOptions)[]
 
 // for background to content
 export function sendMessageToContentScript(request: any, callback?: Function) {
@@ -28,16 +39,22 @@ export function setOption(key: string, val: boolean) {
     chrome.storage.sync.set({ [key]: val }, () => {})
 }
 
-export function getOptions(keys: string[], callback: (options: { [key: string]: boolean }) => void) {
-    chrome.storage.sync.get(keys, options => {
-        callback({ ...keys.reduce((a, b) => ({ ...a, [b]: null }), {}), ...options })
+export function getOptions(keys: (keyof typeof defaultOptions)[], callback: (options: typeof defaultOptions) => void) {
+    chrome.storage.sync.get(keys, (options: Partial<typeof defaultOptions>) => {
+        const opts = keys.reduce((a, b) => ({ ...a, [b]: defaultOptions[b] }), {}) as typeof defaultOptions
+
+        Object.keys(options).forEach((key: keyof typeof defaultOptions) => {
+            opts[key] = options[key] as boolean
+        })
+
+        callback(opts as typeof defaultOptions)
     })
 }
 
 export async function getRecordOptions() {
     return new Promise(r => {
         getOptions(storeKeys, options => {
-            r(pickup(options, recordKeys))
+            r(pickup(options, Object.keys(recordOptions)))
         })
     })
 }
@@ -47,7 +64,7 @@ export async function getExportOptions(): Promise<{
 }> {
     return new Promise(r => {
         getOptions(storeKeys, options => {
-            r(pickup(options, exportKeys))
+            r(pickup(options, Object.keys(exportOptions)))
         })
     })
 }
