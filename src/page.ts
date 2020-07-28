@@ -13,8 +13,10 @@ function record(e: CustomEvent) {
 
     if (process.env.LIVE_MODE) {
         const socket = io('http://localhost:9528')
-        ctrl = record((data: any) => {
-            socket.emit('record-msg', data)
+        ctrl = record({
+            emitter: (data: any) => {
+                socket.emit('record-msg', data)
+            }
         })
         return
     }
