@@ -1,27 +1,25 @@
 import { dispatchEvent } from './common'
 import io from 'socket.io-client'
 
-let ctrl: {
-    unsubscribe: () => void
-} | null
+let ctrl: any = {}
 
 function record(e: CustomEvent) {
     const options = e.detail as { [key: string]: boolean }
 
     const cat = (window as any).timecat
-    const { record } = cat
+    const { Recorder } = cat
 
     if (process.env.LIVE_MODE) {
         const socket = io('http://localhost:9528')
-        ctrl = record({
-            emitter: (data: any) => {
+        ctrl = new Recorder({
+            onData: (data: any) => {
                 socket.emit('record-msg', data)
             }
         })
         return
     }
 
-    ctrl = record(options)
+    ctrl = new Recorder(options)
 }
 
 function finish(e: CustomEvent) {
