@@ -9,7 +9,7 @@ const envLive = args.includes('live')
 const env = envDev ? 'development' : 'production'
 const live = envLive ? 'live' : ''
 
-const target = 'timecatjs.min.js'
+const target = 'timecat.global.prod.js'
 const assetsDir = 'src/assets/'
 const isExist = fs.existsSync(assetsDir + target)
 

@@ -34,7 +34,7 @@
         }
     ],
     "web_accessible_resources": [
-        "timecatjs.min.js",
+        "timecat.global.prod.js",
         "timecat-chrome-page.js"
     ]
 }

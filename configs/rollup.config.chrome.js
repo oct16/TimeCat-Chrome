@@ -25,9 +25,10 @@ const defaultPlugin = [
     isDev ? null : terser()
 ]
 
-const copyTargets = [{ src: 'src/assets/*', dest }, !isDev ? { src: 'dist/timecatjs.min.js', dest } : null].filter(
-    Boolean
-)
+const copyTargets = [
+    { src: 'src/assets/*', dest },
+    !isDev ? { src: 'dist/timecat.global.prod.js', dest } : null
+].filter(Boolean)
 
 export default [
     {

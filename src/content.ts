@@ -1,14 +1,9 @@
-import {
-    dispatchEvent,
-    sendMessageToBackgroundScript,
-    storeKeys,
-    getOptions,
-    getRecordOptions,
-    getExportOptions
-} from './common'
+import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, getExportOptions } from './common'
 
 const isDev = process.env.NODE_ENV === 'development'
-const timeCatScript = isDev ? 'http://localhost:4321/timecat.global.js' : chrome.runtime.getURL('timecatjs.min.js')
+const timeCatScript = isDev
+    ? 'http://localhost:4321/timecat.global.js'
+    : chrome.runtime.getURL('timecat.global.prod.js')
 
 chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
     sendResponse(null)
