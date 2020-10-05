@@ -1,5 +1,6 @@
 const recordOptions = {
-    audio: false
+    audio: false,
+    font: false
 }
 const exportOptions = {
     autoplay: true,
