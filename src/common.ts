@@ -35,7 +35,7 @@ export function sendMessageToBackgroundScript(request: any, callback?: Function)
 
 // for page and content
 export function dispatchEvent(type: string, data: any = null) {
-    event = new CustomEvent(type, { detail: data })
+    event = new CustomEvent(type, { detail: JSON.stringify(data) })
     window.dispatchEvent(event)
 }
 
@@ -102,4 +102,13 @@ export function collectDataOverTime<T>(cb: (result: T[]) => void, time = 1000) {
             return
         }
     }
+}
+
+export function secondToDate(second: number) {
+    if (second <= 0) {
+        second = 0
+    }
+    const [h, m, s] = [Math.floor(second / 3600), Math.floor((second / 60) % 60), Math.floor(second % 60)]
+    const timeStr = [h, m, s].map(i => (i <= 9 ? '0' + i : i)).join(':')
+    return timeStr.replace(/^00:/, '')
 }

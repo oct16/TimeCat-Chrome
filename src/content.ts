@@ -27,12 +27,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse(null)
 })
 
-window.addEventListener('RECORD_COLLECT_TO_CONTENT', (e: CustomEvent) => {
-    const { isFinal, records } = e.detail as { isFinal: boolean; records: RecordData[] }
-    sendMessageToBackgroundScript({
-        type: 'BACK_RECORDS',
-        data: { isFinal, records }
-    })
+window.addEventListener(
+    'RECORD_COLLECT_TO_CONTENT',
+    (e: CustomEvent) => {
+        const { isFinal, records } = JSON.parse(e.detail) as { isFinal: boolean; records: RecordData[] }
+        sendMessageToBackgroundScript({
+            type: 'BACK_RECORDS',
+            data: { isFinal, records }
+        })
+    },
+    false
+)
+
+sendMessageToBackgroundScript({
+    type: 'DOM_READY',
+    data: {
+        url: location.href
+    }
 })
 
 const injectMain = injectScriptOnce({

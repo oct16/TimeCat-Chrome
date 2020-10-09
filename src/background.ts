@@ -1,5 +1,5 @@
-import { sendMessageToContentScript, collectDataOverTime, getExportOptions, isDev } from './common'
-import { RecordData, createReplayHTML, RecordType } from 'timecatjs'
+import { sendMessageToContentScript, collectDataOverTime, getExportOptions, isDev, secondToDate } from './common'
+import { RecordData, createReplayHTML, RecordType, delay } from 'timecatjs'
 
 export const timeCatScript = isDev
     ? 'http://localhost:4321/timecat.global.js'
@@ -8,7 +8,13 @@ export const timeCatScript = isDev
 type iStatus = 'run' | 'wait' | 'finish'
 let time = 0
 let timer: number
-let running = false
+
+let isRunning = false
+let isWaiting = true
+let waitingTabId: number
+
+let activeUrl: string
+let activeTabId: number
 
 setStatus('finish')
 
@@ -18,7 +24,6 @@ const collector = collectDataOverTime<RecordData>(result => {
     const firstHead = sortedRecords.findIndex(record => record.type === RecordType.HEAD)
     sortedRecords.splice(0, firstHead)
     download(sortedRecords)
-    setStatus('finish')
 }, 1000)
 
 function getPacks(records: RecordData[]) {
@@ -42,10 +47,10 @@ function getPacks(records: RecordData[]) {
 
 function recordPage(status: 'run' | 'finish') {
     const isStart = status === 'run'
-    if (running === isStart) {
+    if (isRunning === isStart) {
         return
     }
-    running = isStart
+    isRunning = isStart
 
     if (isStart) {
         setStatus('wait')
@@ -69,11 +74,11 @@ function setStatus(status: iStatus) {
             return
         }
         setStatusIcon('run')
-        pinterTimerHandle()
-        timer = window.setInterval(pinterTimerHandle, 1000)
-        running = true
+        increaseTimer()
+        timer = window.setInterval(increaseTimer, 1000)
+        isRunning = true
 
-        function pinterTimerHandle() {
+        function increaseTimer() {
             const text = secondToDate(time)
             chrome.browserAction.setBadgeText({ text })
             time++
@@ -109,62 +114,13 @@ function setStatusIcon(status: iStatus) {
     chrome.browserAction.setIcon({ path })
 }
 
-chrome.runtime.onMessage.addListener(request => {
-    const { type } = request
-    if (type === 'BACK_RECORDS') {
-        const { records, isFinal } = request.data
-        if (!isFinal && timer) {
-            setStatus('wait')
-        }
-        collector(records, isFinal)
-    }
-})
-
-chrome.browserAction.onClicked.addListener(() => {
-    recordPage(running ? 'finish' : 'run')
-})
-
-function getIconPath(iconName: string) {
-    return 'record-icon-' + iconName + '.png'
-}
-
-function secondToDate(second: number) {
-    if (second <= 0) {
-        second = 0
-    }
-    const [h, m, s] = [Math.floor(second / 3600), Math.floor((second / 60) % 60), Math.floor(second % 60)]
-    const timeStr = [h, m, s].map(i => (i <= 9 ? '0' + i : i)).join(':')
-    return timeStr.replace(/^00:/, '')
-}
-
-chrome.tabs.onActivated.addListener(activeInfo => {
-    chrome.tabs.get(activeInfo.tabId, tab => {
-        onUrlChange(tab.url)
+async function getCurrentTabInfo(): Promise<{ url?: string; id?: number }> {
+    return new Promise(resolve => {
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+            const tab = tabs[0]
+            resolve({ url: tab.url, id: tab.id })
+        })
     })
-})
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (tab.status === 'complete') {
-        onUrlChange(tab.url)
-    }
-})
-
-async function onUrlChange(url?: string) {
-    if (!url) {
-        return
-    }
-    await new Promise(r => setTimeout(r, 300))
-    if (running) {
-        if (/chrome:/.test(url)) {
-            setStatus('wait')
-        } else if (/^https?/.test(url)) {
-            sendMessageToContentScript({ type: 'START' }, (isInjected: boolean) => {
-                if (isInjected) {
-                    setStatus('run')
-                }
-            })
-        }
-    }
 }
 
 async function download(records: RecordData[]) {
@@ -193,3 +149,104 @@ async function download(records: RecordData[]) {
         filename: `TimeCat-${getRandomCode()}.html`
     })
 }
+
+function getIconPath(iconName: string) {
+    return 'record-icon-' + iconName + '.png'
+}
+
+async function onUrlChange(opts: { url?: string; tabId?: number; isDomReady?: boolean }) {
+    const { url, isDomReady } = opts
+
+    const { id: tabId } = await getCurrentTabInfo()
+    await delay(500)
+
+    if (!url) {
+        return
+    }
+
+    if (/^chrome:/.test(url)) {
+        if (isRunning) {
+            activeUrl = url
+            setStatus('wait')
+        }
+        return
+    }
+
+    const isSameTab = tabId === activeTabId
+
+    if (url === activeUrl && isSameTab && !isDomReady) {
+        return
+    }
+
+    activeUrl = url
+    activeTabId = tabId!
+
+    await new Promise(r => setTimeout(r, 500))
+    if (isRunning) {
+        sendMessageToContentScript({ type: 'START' }, (isInjected: boolean) => {
+            if (isInjected) {
+                isWaiting = false
+                setStatus('run')
+            }
+        })
+    }
+}
+
+chrome.runtime.onMessage.addListener(request => {
+    const { type } = request
+    if (type === 'BACK_RECORDS') {
+        const { records, isFinal } = request.data
+        if (!isFinal && timer) {
+            setStatus('wait')
+        }
+        collector(records, isFinal)
+    } else if (type === 'DOM_READY') {
+        const url = request.data.url
+        onUrlChange({ url, isDomReady: true })
+    }
+})
+
+chrome.browserAction.onClicked.addListener(() => {
+    recordPage(isRunning ? 'finish' : 'run')
+})
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+    chrome.tabs.get(tabId, tab => {
+        const { url } = tab
+        onUrlChange({ url, tabId })
+    })
+})
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    const url = tab.url
+    if (!url) {
+        return
+    }
+
+    if (!isRunning) {
+        return
+    }
+
+    if (isWaiting) {
+        return
+    }
+
+    if (waitingTabId === tabId) {
+        return
+    }
+
+    setStatus('wait')
+    isWaiting = true
+    waitingTabId = tabId
+})
+
+chrome.windows.onRemoved.addListener(windowId => {
+    chrome.windows.getAll(windows => {
+        if (!windows.length) {
+            setStatus('finish')
+            isRunning = false
+            isWaiting = false
+            waitingTabId = 0
+        }
+    })
+})
