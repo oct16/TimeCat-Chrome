@@ -9,10 +9,10 @@ function record(e: CustomEvent) {
 
     if (process.env.LIVE_MODE) {
         const socket = io('http://localhost:9528')
-        recorder = new Recorder({
-            onData: (data: any) => {
-                socket.emit('record-msg', data)
-            }
+        recorder = new Recorder()
+
+        recorder.onData((data: any) => {
+            socket.emit('record-msg', data)
         })
         return
     }
