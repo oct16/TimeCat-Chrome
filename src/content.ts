@@ -1,5 +1,5 @@
 import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, getExportOptions } from './common'
-
+import { RecordData } from 'timecatjs'
 const isDev = process.env.NODE_ENV === 'development'
 const timeCatScript = isDev
     ? 'http://localhost:4321/timecat.global.js'
@@ -17,15 +17,19 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
             break
         }
         case 'FINISH': {
+            const records = request.records
             const options = await getExportOptions()
             dispatchEvent('CHROME_RECORD_FINISH', {
-                scripts: [
-                    {
-                        name: 'time-cat',
-                        src: timeCatScript
-                    }
-                ],
-                ...options
+                records,
+                options: {
+                    scripts: [
+                        {
+                            name: 'time-cat',
+                            src: timeCatScript
+                        }
+                    ],
+                    ...options
+                }
             })
             break
         }
@@ -33,8 +37,20 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
             dispatchEvent('CHROME_TAB_CHANGE')
             break
         }
+        case 'COLLECT_RECORDS': {
+            dispatchEvent('CHROME_RECORD_COLLECT')
+            break
+        }
     }
     return true
+})
+
+window.addEventListener('RECORD_COLLECT_TO_CONTENT', (e: CustomEvent) => {
+    const { isFinal, records } = e.detail as { isFinal: boolean; records: RecordData[] }
+    sendMessageToBackgroundScript({
+        type: 'BACK_RECORDS',
+        data: { isFinal, records }
+    })
 })
 
 window.addEventListener('CHROME_RECORD_CANCEL', () =>
@@ -86,6 +102,6 @@ function injectScriptOnce(scriptItem: { name: string; src: string }) {
         script.id = name
         script.src = src
         el = script
-        document.body.appendChild(script)
+        document.head.insertBefore(script, document.head.firstChild)
     }
 }

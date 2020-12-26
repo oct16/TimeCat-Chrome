@@ -25,7 +25,7 @@ export function sendMessageToContentScript(request: any, callback?: Function) {
     })
 }
 
-// for content tp background
+// for content to background
 export function sendMessageToBackgroundScript(request: any, callback?: Function) {
     chrome.runtime.sendMessage(request, callback)
 }
@@ -52,7 +52,7 @@ export function getOptions(keys: (keyof typeof defaultOptions)[], callback: (opt
     })
 }
 
-export async function getRecordOptions() {
+export async function getRecordOptions(): Promise<{ [key: string]: any }> {
     return new Promise(r => {
         getOptions(storeKeys, options => {
             r(pickup(options, Object.keys(recordOptions)))
@@ -77,4 +77,26 @@ function pickup(obj: { [key: string]: any }, list: string[]) {
         }
         return out
     }, {} as { [key: string]: any })
+}
+
+export function collectDataOverTime<T>(cb: (result: T[]) => void, time = 1000) {
+    const result = [] as T[]
+    let timer: number
+    return (data: T, isFinal: boolean) => {
+        result.push(data)
+
+        if (!isFinal) {
+            return
+        }
+        if (!timer) {
+            timer = window.setTimeout(handle, time)
+        }
+
+        function handle() {
+            cb(result.slice())
+            result.length = 0
+            timer = 0
+            return
+        }
+    }
 }
