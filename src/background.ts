@@ -1,14 +1,18 @@
 import { sendMessageToContentScript, collectDataOverTime } from './common'
 import { RecordData } from 'timecatjs'
 
+type iStatus = 'run' | 'wait' | 'finish'
 let time = 0
-let timer: NodeJS.Timeout
+let timer: number
 let running = false
+
+setStatus('finish')
 
 const collector = collectDataOverTime<RecordData>(result => {
     const packs = getPacks(result.flat())
     const sortedRecords = packs.sort((a, b) => a[0].time - b[0].time)
     sendMessageToContentScript({ type: 'FINISH', records: sortedRecords.flat() })
+    setStatus('finish')
 }, 500)
 
 function getPacks(records: RecordData[]) {
@@ -30,44 +34,88 @@ function getPacks(records: RecordData[]) {
     return packs
 }
 
-function recordPage(status: boolean) {
-    running = !status
+function recordPage(status: 'run' | 'finish') {
+    const isStart = status === 'run'
+    if (running === isStart) {
+        return
+    }
+    running = isStart
 
-    if (!running) {
-        chrome.browserAction.setIcon({ path: getIconPath('red') })
-        sendMessageToContentScript({ type: 'START' })
-        timeHandle()
-        timer = setInterval(timeHandle, 1000)
-        running = true
+    if (isStart) {
+        setStatus('wait')
+        sendMessageToContentScript({ type: 'START' }, (isInjected: boolean) => {
+            if (isInjected) {
+                setStatus('run')
+            }
+        })
+        return
     } else {
         chrome.tabs.query({}, tabs => {
             tabs.forEach(tab => chrome.tabs.sendMessage(tab.id!, { type: 'COLLECT_RECORDS' }))
         })
-        time = 0
-        clearInterval(timer)
-        chrome.browserAction.setIcon({ path: getIconPath('black') })
-        chrome.browserAction.setBadgeText({ text: '' })
-        running = false
+        setStatus('finish')
     }
 }
 
-function timeHandle() {
-    const text = secondToDate(time)
-    chrome.browserAction.setBadgeText({ text })
-    time++
+function setStatus(status: iStatus) {
+    if (status === 'run') {
+        if (timer) {
+            return
+        }
+        setStatusIcon('run')
+        pinterTimerHandle()
+        timer = window.setInterval(pinterTimerHandle, 1000)
+        running = true
+
+        function pinterTimerHandle() {
+            const text = secondToDate(time)
+            chrome.browserAction.setBadgeText({ text })
+            time++
+        }
+    } else if (status === 'wait') {
+        setStatusIcon('wait')
+        clearInterval(timer)
+        timer = 0
+    } else {
+        clearInterval(timer)
+        setStatusIcon('finish')
+        time = timer = 0
+        chrome.browserAction.setBadgeText({ text: '' })
+    }
+}
+
+function setStatusIcon(status: iStatus) {
+    let path: string
+    switch (status) {
+        case 'run':
+            path = getIconPath('red')
+            break
+        case 'wait':
+            path = getIconPath('white')
+            break
+        case 'finish':
+            path = getIconPath('black')
+            break
+        default:
+            return
+    }
+    chrome.browserAction.setIcon({ path })
 }
 
 chrome.runtime.onMessage.addListener(request => {
     const { type } = request
-    if (type === 'RECORD_CANCEL') {
-        recordPage(false)
-    } else if (type === 'BACK_RECORDS') {
+    if (type === 'BACK_RECORDS') {
         const { records, isFinal } = request.data
+        if (!isFinal && timer) {
+            setStatus('wait')
+        }
         collector(records, isFinal)
     }
 })
 
-chrome.browserAction.onClicked.addListener(() => recordPage(!running))
+chrome.browserAction.onClicked.addListener(() => {
+    recordPage(running ? 'finish' : 'run')
+})
 
 function getIconPath(iconName: string) {
     return 'record-icon-' + iconName + '.png'
@@ -95,8 +143,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 async function onUrlChange(url?: string) {
+    if (!url) {
+        return
+    }
     await new Promise(r => setTimeout(r, 300))
-    if (url && running) {
-        sendMessageToContentScript({ type: 'START' })
+    if (running) {
+        if (/chrome:/.test(url)) {
+            setStatus('wait')
+        } else if (/^https?/.test(url)) {
+            sendMessageToContentScript({ type: 'START' }, (isInjected: boolean) => {
+                if (isInjected) {
+                    setStatus('run')
+                }
+            })
+        }
     }
 }

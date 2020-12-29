@@ -17,7 +17,8 @@ export const storeKeys = [
 // for background to content
 export function sendMessageToContentScript(request: any, callback?: Function) {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-        chrome.tabs.sendMessage(tabs[0].id!, request, response => {
+        const tabId = tabs[0].id!
+        chrome.tabs.sendMessage(tabId, request, response => {
             if (callback) {
                 callback(response)
             }

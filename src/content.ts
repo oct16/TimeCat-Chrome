@@ -5,31 +5,35 @@ const timeCatScript = isDev
     ? 'http://localhost:4321/timecat.global.js'
     : chrome.runtime.getURL('timecat.global.prod.js')
 
-chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
-    sendResponse(null)
+let timeCatInjected = false
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { type } = request
     switch (type) {
         case 'START': {
-            lazyInject(async () => {
+            lazyInject().then(async () => {
                 const options = await getRecordOptions()
                 dispatchEvent('CHROME_RECORD_START', options)
+                timeCatInjected = true
+                sendResponse(timeCatInjected)
             })
-            break
+            return true
         }
         case 'FINISH': {
-            const records = request.records
-            const options = await getExportOptions()
-            dispatchEvent('CHROME_RECORD_FINISH', {
-                records,
-                options: {
-                    scripts: [
-                        {
-                            name: 'time-cat',
-                            src: timeCatScript
-                        }
-                    ],
-                    ...options
-                }
+            getExportOptions().then(options => {
+                const records = request.records
+                dispatchEvent('CHROME_RECORD_FINISH', {
+                    records,
+                    options: {
+                        scripts: [
+                            {
+                                name: 'time-cat',
+                                src: timeCatScript
+                            }
+                        ],
+                        ...options
+                    }
+                })
             })
             break
         }
@@ -42,7 +46,7 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
             break
         }
     }
-    return true
+    sendResponse(null)
 })
 
 window.addEventListener('RECORD_COLLECT_TO_CONTENT', (e: CustomEvent) => {
@@ -53,11 +57,6 @@ window.addEventListener('RECORD_COLLECT_TO_CONTENT', (e: CustomEvent) => {
     })
 })
 
-window.addEventListener('CHROME_RECORD_CANCEL', () =>
-    sendMessageToBackgroundScript({
-        type: 'RECORD_CANCEL'
-    })
-)
 
 const injectMain = injectScriptOnce({
     name: 'time-cat',
@@ -69,13 +68,11 @@ const injectPageJS = injectScriptOnce({
     src: chrome.runtime.getURL('timecat-chrome-page.js')
 })
 
-function lazyInject(onLoadFn: () => void) {
+function lazyInject(): Promise<void> {
     if (!window.document.getElementById('time-cat')) {
-        Promise.all([new Promise(injectMain), new Promise(injectPageJS)]).then(() => {
-            onLoadFn()
-        })
+        return Promise.all([new Promise(injectMain), new Promise(injectPageJS)]).then(Promise.resolve.bind(Promise))
     } else {
-        onLoadFn()
+        return Promise.resolve()
     }
 }
 
