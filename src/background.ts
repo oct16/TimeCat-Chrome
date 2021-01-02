@@ -80,7 +80,7 @@ function setStatus(status: iStatus) {
         setStatusIcon('wait')
         clearInterval(timer)
         timer = 0
-        chrome.browserAction.setBadgeText({ text: '⏸' })
+        chrome.browserAction.setBadgeText({ text: 'pause' })
     } else {
         clearInterval(timer)
         setStatusIcon('finish')
