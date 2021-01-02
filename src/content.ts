@@ -1,5 +1,9 @@
-import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, timeCatScript } from './common'
+import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, isDev } from './common'
 import { RecordData } from 'timecatjs'
+
+export const timeCatScript = isDev
+    ? 'http://localhost:4321/timecat.global.js'
+    : chrome.runtime.getURL('timecat.global.prod.js')
 
 let timeCatInjected = false
 

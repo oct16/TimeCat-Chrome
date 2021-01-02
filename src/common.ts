@@ -1,7 +1,4 @@
 export const isDev = process.env.NODE_ENV === 'development'
-export const timeCatScript = isDev
-    ? 'http://localhost:4321/timecat.global.js'
-    : chrome.runtime.getURL('timecat.global.prod.js')
 
 const recordOptions = {
     audio: false,

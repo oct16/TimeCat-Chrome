@@ -1,5 +1,9 @@
-import { sendMessageToContentScript, collectDataOverTime, getExportOptions, timeCatScript } from './common'
+import { sendMessageToContentScript, collectDataOverTime, getExportOptions, isDev } from './common'
 import { RecordData, createReplayHTML } from 'timecatjs'
+
+export const timeCatScript = isDev
+    ? 'http://localhost:4321/timecat.global.js'
+    : chrome.runtime.getURL('timecat.global.prod.js')
 
 type iStatus = 'run' | 'wait' | 'finish'
 let time = 0
