@@ -25,9 +25,7 @@ function record(e: CustomEvent) {
     // }
 
     recorder = new Recorder({ ...options, write: false, visibleChange: false })
-    recorder.onData(record => {
-        records.push(record)
-    })
+    recorder.onData(records.push)
 }
 
 function finish(e: CustomEvent) {

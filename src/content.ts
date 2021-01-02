@@ -1,9 +1,5 @@
-import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, getExportOptions } from './common'
+import { dispatchEvent, sendMessageToBackgroundScript, getRecordOptions, timeCatScript } from './common'
 import { RecordData } from 'timecatjs'
-const isDev = process.env.NODE_ENV === 'development'
-const timeCatScript = isDev
-    ? 'http://localhost:4321/timecat.global.js'
-    : chrome.runtime.getURL('timecat.global.prod.js')
 
 let timeCatInjected = false
 
@@ -18,28 +14,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse(timeCatInjected)
             })
             return true
-        }
-        case 'FINISH': {
-            getExportOptions().then(options => {
-                const records = request.records
-                dispatchEvent('CHROME_RECORD_FINISH', {
-                    records,
-                    options: {
-                        scripts: [
-                            {
-                                name: 'time-cat',
-                                src: timeCatScript
-                            }
-                        ],
-                        ...options
-                    }
-                })
-            })
-            break
-        }
-        case 'TAB_CHANGE': {
-            dispatchEvent('CHROME_TAB_CHANGE')
-            break
         }
         case 'COLLECT_RECORDS': {
             dispatchEvent('CHROME_RECORD_COLLECT')
@@ -56,7 +30,6 @@ window.addEventListener('RECORD_COLLECT_TO_CONTENT', (e: CustomEvent) => {
         data: { isFinal, records }
     })
 })
-
 
 const injectMain = injectScriptOnce({
     name: 'time-cat',

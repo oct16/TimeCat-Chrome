@@ -17,7 +17,8 @@
     "permissions": [
         "tabs",
         "activeTab",
-        "storage"
+        "storage",
+        "downloads"
     ],
     "options_page": "options.html",
     "browser_action": {

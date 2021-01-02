@@ -1,5 +1,5 @@
-import { sendMessageToContentScript, collectDataOverTime } from './common'
-import { RecordData } from 'timecatjs'
+import { sendMessageToContentScript, collectDataOverTime, getExportOptions, timeCatScript } from './common'
+import { RecordData, createReplayHTML } from 'timecatjs'
 
 type iStatus = 'run' | 'wait' | 'finish'
 let time = 0
@@ -11,7 +11,7 @@ setStatus('finish')
 const collector = collectDataOverTime<RecordData>(result => {
     const packs = getPacks(result.flat())
     const sortedRecords = packs.sort((a, b) => a[0].time - b[0].time)
-    sendMessageToContentScript({ type: 'FINISH', records: sortedRecords.flat() })
+    download(sortedRecords.flat())
     setStatus('finish')
 }, 500)
 
@@ -76,6 +76,7 @@ function setStatus(status: iStatus) {
         setStatusIcon('wait')
         clearInterval(timer)
         timer = 0
+        chrome.browserAction.setBadgeText({ text: ' stop' })
     } else {
         clearInterval(timer)
         setStatusIcon('finish')
@@ -158,4 +159,31 @@ async function onUrlChange(url?: string) {
             })
         }
     }
+}
+
+async function download(records: RecordData[]) {
+    const options = await getExportOptions()
+    const exportOptions = {
+        records,
+        scripts: [
+            {
+                name: 'time-cat',
+                src: timeCatScript
+            }
+        ],
+        ...options
+    }
+
+    function getRandomCode(len: 6 | 7 | 8 = 8) {
+        const code = (Math.random() * 20 + 16).toString(36).substring(2, len + 2)
+        return code.toUpperCase()
+    }
+
+    const doc = await createReplayHTML(exportOptions)
+    const html = doc.documentElement.outerHTML
+    const blob = new Blob([html], { type: 'text/html' })
+    chrome.downloads.download({
+        url: URL.createObjectURL(blob),
+        filename: `TimeCat-${getRandomCode()}.html`
+    })
 }
