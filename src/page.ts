@@ -29,7 +29,7 @@ function record(e: CustomEvent) {
             matches: ['css'],
             type: 'preFetch',
             rewrite: {
-                matches: ['ttf', 'woff']
+                matches: ['ttf', 'woff', 'woff2', 'otf']
             }
         }
     ]
