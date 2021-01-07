@@ -1,5 +1,5 @@
 // import io from 'socket.io-client'
-import { Recorder, RecordData } from 'timecatjs'
+import { Recorder, RecordOptions, RecordData } from 'timecatjs'
 import { dispatchEvent } from './common'
 
 let recorder: Recorder
@@ -24,7 +24,17 @@ function record(e: CustomEvent) {
     //     return
     // }
 
-    recorder = new Recorder({ ...options, write: false, visibleChange: false })
+    const rewriteResource: RecordOptions['rewriteResource'] = [
+        {
+            matches: ['css'],
+            type: 'preFetch',
+            rewrite: {
+                matches: ['ttf', 'woff']
+            }
+        }
+    ]
+
+    recorder = new Recorder({ ...options, write: false, visibleChange: false, rewriteResource })
     recorder.onData((record: RecordData) => records.push(record))
 }
 
