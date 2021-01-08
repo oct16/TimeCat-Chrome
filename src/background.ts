@@ -19,7 +19,7 @@ const collector = collectDataOverTime<RecordData>(result => {
     sortedRecords.splice(0, firstHead)
     download(sortedRecords)
     setStatus('finish')
-}, 500)
+}, 1000)
 
 function getPacks(records: RecordData[]) {
     const packs: RecordData[][] = []
