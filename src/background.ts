@@ -1,5 +1,5 @@
 import { sendMessageToContentScript, collectDataOverTime, getExportOptions, isDev } from './common'
-import { RecordData, createReplayHTML } from 'timecatjs'
+import { RecordData, createReplayHTML, RecordType } from 'timecatjs'
 
 export const timeCatScript = isDev
     ? 'http://localhost:4321/timecat.global.js'
@@ -14,8 +14,10 @@ setStatus('finish')
 
 const collector = collectDataOverTime<RecordData>(result => {
     const packs = getPacks(result.flat())
-    const sortedRecords = packs.sort((a, b) => a[0].time - b[0].time)
-    download(sortedRecords.flat())
+    const sortedRecords = packs.sort((a, b) => a[0].time - b[0].time).flat()
+    const firstHead = sortedRecords.findIndex(record => record.type === RecordType.HEAD)
+    sortedRecords.splice(0, firstHead)
+    download(sortedRecords)
     setStatus('finish')
 }, 500)
 
