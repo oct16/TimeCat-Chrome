@@ -29,7 +29,7 @@
         "rollup-plugin-string": "^3.0.0",
         "rollup-plugin-terser": "^5.3.0",
         "rollup-plugin-typescript2": "^0.26.0",
-        "timecatjs": "^1.2.0-alpha.16",
+        "timecatjs": "^1.2.0-alpha.18",
         "typescript": "^3.9.2"
     },
     "repository": {

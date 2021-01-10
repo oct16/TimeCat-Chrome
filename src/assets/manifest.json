@@ -2,7 +2,7 @@
     "name": "TimeCat Chrome",
     "manifest_version": 2,
     "description": "A Magical Web Recorder",
-    "version": "1.2.0.3",
+    "version": "1.2.0.4",
     "icons": {
         "16": "icon16.png",
         "48": "icon48.png",
