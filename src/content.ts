@@ -23,6 +23,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             dispatchEvent('CHROME_RECORD_COLLECT')
             break
         }
+        case 'DETECT_INJECTED': {
+            sendResponse(true)
+            return
+        }
     }
     sendResponse(null)
 })

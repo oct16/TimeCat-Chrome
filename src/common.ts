@@ -30,7 +30,9 @@ export function sendMessageToContentScript(request: any, callback?: Function) {
 
 // for content to background
 export function sendMessageToBackgroundScript(request: any, callback?: Function) {
-    chrome.runtime.sendMessage(request, callback)
+    try {
+        chrome.runtime.sendMessage(request, callback)
+    } catch (error) {}
 }
 
 // for page and content

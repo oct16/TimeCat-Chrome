@@ -17,6 +17,7 @@ let activeUrl: string
 let activeTabId: number
 
 setStatus('finish')
+injectAllContentScript()
 
 const collector = collectDataOverTime<RecordData>(result => {
     const packs = getPacks(result.flat())
@@ -118,6 +119,9 @@ async function getCurrentTabInfo(): Promise<{ url?: string; id?: number }> {
     return new Promise(resolve => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
             const tab = tabs[0]
+            if (!tab) {
+                return resolve({})
+            }
             resolve({ url: tab.url, id: tab.id })
         })
     })
@@ -154,11 +158,34 @@ function getIconPath(iconName: string) {
     return 'record-icon-' + iconName + '.png'
 }
 
+function injectAllContentScript() {
+    chrome.tabs.query({}, tabs => {
+        tabs.forEach(tab => {
+            const tabId = tab.id
+            const tabUrl = tab.url
+            if (tabId && tabUrl) {
+                if (/^https?/.test(tabUrl)) {
+                    chrome.tabs.sendMessage(tabId, { type: 'DETECT_INJECTED' }, response => {
+                        var lastError = chrome.runtime.lastError
+                        if (!response && lastError?.message) {
+                            chrome.tabs.executeScript(tabId, { file: 'timecat-chrome-content.js' })
+                        }
+                    })
+                }
+            }
+        })
+    })
+}
+
 async function onUrlChange(opts: { url?: string; tabId?: number; isDomReady?: boolean }) {
     const { url, isDomReady } = opts
 
     const { id: tabId } = await getCurrentTabInfo()
-    await delay(500)
+    if (!tabId) {
+        return
+    }
+
+    await delay(200)
 
     if (!url) {
         return

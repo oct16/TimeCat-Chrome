@@ -55,5 +55,4 @@ function collect(isFinal = true) {
 window.addEventListener('CHROME_RECORD_START', record, false)
 window.addEventListener('CHROME_RECORD_FINISH', finish, false)
 window.addEventListener('CHROME_RECORD_COLLECT', () => collect(), false)
-// window.addEventListener('beforeunload', () => collect(false), false)
-window.addEventListener('unload', () => collect(false), false)
+window.addEventListener('beforeunload', () => collect(false), false)

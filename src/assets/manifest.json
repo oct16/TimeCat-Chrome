@@ -17,7 +17,8 @@
     "permissions": [
         "tabs",
         "storage",
-        "downloads"
+        "downloads",
+        "*://*/*"
     ],
     "options_page": "options.html",
     "browser_action": {
