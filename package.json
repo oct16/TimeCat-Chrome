@@ -1,14 +1,13 @@
 {
-    "description": "TimeCat Chrome",
+    "name": "timecat-chrome",
+    "author": "oct16",
+    "license": "GPL-3.0",
+    "description": "TimeCat Chrome Plugin",
     "version": "1.0.0",
-    "workspaces": [
-        "src/*"
-    ],
     "scripts": {
         "build": "node scripts/build.js",
         "build:dev": "npm run build dev",
-        "build:live": "npm run build dev live",
-        "f": "npx code-formatter --path packages"
+        "build:live": "npm run build dev live"
     },
     "devDependencies": {
         "@oct16/code-formatter": "^1.0.9",
@@ -36,8 +35,6 @@
         "type": "git",
         "url": "git+https://github.com/oct16/TimeCat.git"
     },
-    "author": "oct16",
-    "license": "GPL",
     "bugs": {
         "url": "https://github.com/oct16/TimeCat/issues"
     },
