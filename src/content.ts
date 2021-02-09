@@ -71,26 +71,27 @@ function lazyInject(): Promise<void> {
 function injectScriptOnce(scriptItem: { name: string; src: string }) {
     let el: HTMLScriptElement | null = null
 
-    return function(callback?: () => void) {
+    return function(resolve: (p?: unknown) => void, reject: (p?: unknown) => void) {
         const { name, src } = scriptItem
 
         const document = window.document
-        if (el && callback) {
-            callback()
-            return el
+        if (el && resolve) {
+            resolve()
+            return
         }
 
         if (document.getElementById(name)) {
-            return el
+            return
         }
 
         const script = document.createElement('script')
         script.onload = () => {
-            callback && callback()
+            resolve && resolve()
         }
         script.id = name
         script.src = src
         el = script
         document.head.insertBefore(script, document.head.firstChild)
+        return
     }
 }

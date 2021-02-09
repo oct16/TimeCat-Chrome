@@ -35,7 +35,10 @@ function record(e: CustomEvent) {
     ]
 
     recorder = new Recorder({ ...options, write: false, visibleChange: false, rewriteResource })
-    recorder.onData((record: RecordData) => records.push(record))
+    recorder.onData(async (record: RecordData, next) => {
+        records.push(record)
+        next()
+    })
 }
 
 function finish(e: CustomEvent) {
