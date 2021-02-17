@@ -47,9 +47,9 @@ function finish(e: CustomEvent) {
     exportReplay({ ...options, records })
 }
 
-function collect(isFinal = true) {
+async function collect(isFinal = true) {
     if (records && records.length) {
-        recorder.destroy()
+        await recorder.destroy()
         dispatchEvent('RECORD_COLLECT_TO_CONTENT', { isFinal, records })
         records.length = 0
     }
