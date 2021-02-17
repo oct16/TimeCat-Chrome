@@ -1,5 +1,5 @@
 import { sendMessageToContentScript, collectDataOverTime, getExportOptions, isDev, secondToDate } from './common'
-import { RecordData, createReplayHTML, RecordType, delay } from 'timecatjs'
+import { RecordData, RecordType, delay, createReplayDocument } from 'timecatjs'
 
 export const timeCatScript = isDev
     ? 'http://localhost:4321/timecat.global.js'
@@ -145,7 +145,7 @@ async function download(records: RecordData[]) {
         return code.toUpperCase()
     }
 
-    const doc = await createReplayHTML(exportOptions)
+    const doc = await createReplayDocument(exportOptions)
     const html = doc.documentElement.outerHTML
     const blob = new Blob([html], { type: 'text/html' })
     chrome.downloads.download({
