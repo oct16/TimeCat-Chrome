@@ -6,7 +6,8 @@
     "version": "1.0.0",
     "scripts": {
         "build": "node scripts/build.js",
-        "dev": "npm run build dev"
+        "dev": "npm run build dev",
+        "update": "cp ../TimeCat/packages/timecat/dist/timecat.global.prod.js src/assets/"
     },
     "devDependencies": {
         "@oct16/code-formatter": "^1.0.9",
