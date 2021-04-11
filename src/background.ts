@@ -262,6 +262,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         return
     }
 
+    if (activeTabId === tabId) {
+        return
+    }
+
     setStatus('wait')
     isWaiting = true
     waitingTabId = tabId
