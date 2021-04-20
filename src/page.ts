@@ -7,7 +7,7 @@ let recorder: Recorder
 const records = [] as RecordData[]
 
 function record(e: CustomEvent) {
-    const options = e.detail as { [key: string]: boolean }
+    const options = JSON.parse(e.detail) as { [key: string]: boolean }
     const { Recorder } = window.TimeCat
 
     if (recorder) {
