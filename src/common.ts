@@ -2,6 +2,7 @@ export const isDev = process.env.NODE_ENV === 'development'
 
 const recordOptions = {
     audio: false,
+    video: false,
     font: false
 }
 const exportOptions = {
